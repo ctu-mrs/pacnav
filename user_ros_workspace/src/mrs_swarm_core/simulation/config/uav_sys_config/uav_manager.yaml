@@ -1,0 +1,7 @@
+takeoff:
+
+  after_takeoff:
+    tracker: "MpcTracker"
+    controller: "Se3Controller"
+
+  takeoff_height: 2.50 

@@ -1,0 +1,17 @@
+# Necessary config
+uav_num: 2
+# exp_world: "dense_forest"
+# exp_world: "human_motion"
+exp_world: "grass_plane"
+# exp_world: "forest_rumburk_large"
+odom_type: "gps"
+# swarm_controller: "test_controller"
+swarm_controller: "pacnav"
+# swarm_controller: "decap_planner"
+# swarm_controller: "icp_boids"
+# use_scheduler: true
+use_scheduler: false
+
+# Only needed if use_scheuler is true
+obj_count: 104
+episodes: 1

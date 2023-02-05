@@ -1,0 +1,5 @@
+<library path="lib/libPacnavController">
+  <class name="pacnav/PacnavController" type="pacnav::PacnavController" base_class_type="swarm_control_manager::SwarmController">
+    <description>PACNav plugin nodelet</description>
+  </class>
+</library>

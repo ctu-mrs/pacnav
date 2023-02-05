@@ -1,0 +1,10 @@
+# time when the method was activated
+start_time: 45
+# time interval of exp after activation
+end_time: 600 
+
+# each entry is for one topic
+# key : [<(after uav_name)topic_name>, <topic_dtype>, '<frame_to_convert'>, '<downsample_count>']
+xtr_spec:
+  t1: ['/global_pose', 'pose', 'global_origin', '10']
+  t2: ['/rplidar/scan', 'laser', 'uav1/local_origin', '2']

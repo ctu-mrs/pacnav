@@ -1,0 +1,17 @@
+<launch>
+
+  <arg name="uav_name" default="$(optenv UAV_NAME uav1)" />
+  <arg name="to_frame" default="global_origin" />
+  <arg name="in_topic" default="/$(arg uav_name)/odometry/odom_main" />
+  <arg name="out_topic" default="/$(arg uav_name)/global_pose" />
+
+  <node name="tranform_msgs_$(arg uav_name)" pkg="swarm_utils" type="transform_msgs.py" output="screen" >
+
+    <param name="uav_name" value="$(arg uav_name)" />
+    <param name="to_frame" value="$(arg to_frame)" />
+    <param name="in_topic" value="$(arg in_topic)" />
+    <param name="out_topic" value="$(arg out_topic)" />
+
+  </node>
+
+</launch>

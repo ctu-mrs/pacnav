@@ -1,0 +1,15 @@
+gain_management:
+
+  # list of allowed gains per odometry mode
+  allowed_gains:
+    ALOAM: ["supersoft"]
+    ALOAMGARM: ["supersoft"]
+    ALOAMREP: ["supersoft"]
+
+  # those gains will be used automatically when a localization mode switches
+  # and the current gains are not in the allowed list (next paragraphs)
+  fallback_gains:
+    GPS: "supersoft"
+    ALOAM: "supersoft"
+    ALOAMGARM: "supersoft"
+    ALOAMREP: "supersoft"

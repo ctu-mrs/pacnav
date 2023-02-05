@@ -1,0 +1,3 @@
+# mrs collision avoidance
+collision_avoidance:
+  enabled: false 

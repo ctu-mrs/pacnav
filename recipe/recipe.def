@@ -1,0 +1,32 @@
+# download docker image from the web
+Bootstrap: docker
+From: ctumrs/mrs_uav_system_ls_modules:latest
+
+%post
+    apt -y update
+
+    apt -y install zsh
+    wget https://github.com/mikefarah/yq/releases/download/3.4.1/yq_linux_amd64 -O /usr/bin/yq &&\
+    chmod +x /usr/bin/yq
+
+    MRS_LOCATION=/opt/mrs
+
+    # link configuration file for the MRS env
+    ln -s $MRS_LOCATION/host/99-mrs_env.sh /.singularity.d/env/99-mrs_env.sh
+
+    # link configuration file for the linux-setup env
+    ln -s $MRS_LOCATION/host/99-linux_setup_env.sh /.singularity.d/env/99-linux_setup_env.sh
+
+%environment
+    export LC_ALL=C
+
+%runscript
+    CMD="${@}"
+
+    if [ -z "${CMD}" ]; then
+      /bin/bash --login
+    else
+      /bin/bash --login -c "${CMD}"
+    fi
+
+    exit 0

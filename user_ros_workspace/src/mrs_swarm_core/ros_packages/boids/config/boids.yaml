@@ -1,0 +1,26 @@
+prox_vec_rep_const: 0.18
+prox_vec_crit_dist: 1.0
+prox_vec_zero_dist: 3.0
+
+prox_vec_coh_const: 0.26 
+prox_vec_follow_dist: 4.0 
+
+col_vec_const: 0.6
+col_vec_max_dist: 1.0 
+
+k_prox: 1.0
+k_nav: 1.2
+k_col: 1.0
+
+uav_radius: 1.50
+lidar_range: 12.0
+invalidate_time: 1.0
+takeoff_height: 2.5
+
+dir_vel_mag: 0.5
+dir_invalid_time: 3
+
+path_in: "path_finder/path"
+mrs_uav_status_out: "mrs_uav_status/display_string"
+dir_in: "/uav1/action_gesture"
+human_in: "/uav1/pose_filtering/pose_out"

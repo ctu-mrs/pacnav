@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<package format="2">
+
+  <name>swarm_utils</name>
+  <version>0.0.1</version>
+  <description>Utility nodes for swarm workspace</description>
+
+  <maintainer email="afzalhmd14@gmail.com">Afzal Ahmad</maintainer>
+
+  <license>free of charge</license>
+
+  <author  email="afzalhmd14@gmail.com">Afzal Ahmad</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>roscpp</depend>
+  <depend>rospy</depend>
+  <depend>catkin_modules</depend>
+  <depend>nodelet</depend>
+  <depend>geometry_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>mrs_lib</depend>
+  <depend>mrs_msgs</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>message_generation</depend>
+  <depend>message_runtime</depend>
+  <depend>dynamic_reconfigure</depend>
+
+  <export>
+    <nodelet plugin="${prefix}/plugins.xml" />
+  </export>
+
+</package>

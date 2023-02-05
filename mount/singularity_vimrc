@@ -1,0 +1,28 @@
+" Explanation:
+" the linux-setup is not initialized with any cusomized "PROFILE", so the
+" colorscheme is se to the fallback (any-color) colorscheme
+"
+" this .vimrc additions are used to override the colorscheme without modifying
+" any internal files
+
+ colorscheme jellybeans
+ let g:airline_theme='jellybeans'
+
+ " Grammar checking
+ Plug 'rhysd/vim-grammarous'
+
+ " Syntax highlighting for GLSL language
+ Plug 'tikhomirov/vim-glsl'
+
+ " Papis vim integration
+ Plug 'junegunn/fzf'
+ Plug 'papis/papis-vim'
+ nnoremap <localleader>pp :Papis<cr>
+ nnoremap <localleader>pv :PapisView<cr>
+
+ " better 'gx' command for opening files and urls
+ Plug 'arp242/xdg_open.vim'
+
+ " syntax highlight for Singularity files
+ Plug 'biosugar0/singularity-vim'
+ au BufRead *.def set ft=singularity
