@@ -10,9 +10,6 @@ MY_PATH=`( cd "$MY_PATH" && pwd )`
 
 ## | ------------------- configure versions ------------------- |
 
-# export SINGULARITY_VERSION=3.10.0
-# export GO_VERSION=1.18
-
 export SINGULARITY_VERSION=3.9.5
 export GO_VERSION=1.17
 
@@ -39,7 +36,7 @@ INSTALL_GO=true
 # check if go is already installed
 if [ -e /usr/local/go/bin ]; then
 
-  echo pes
+  echo Hi!
 
   default=n
   while true; do
