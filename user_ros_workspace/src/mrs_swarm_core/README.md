@@ -1,26 +1,39 @@
 # MRS-SWARM-CORE
-This is a collection of packages and resources to design and experiment with various multi-robot and swarming algorithms. It serves as an interface between the mrs_uav_system and your custom algorithm. It also provides some utility nodes that may prove useful for your custom algorithm. The swarm_core contains the following packages:
+
+## What?
+The mrs_swarm_core is a collection of pkgs (ROS1 and otherwise). It simplifies the interaction between ros nodes in the mrs_uav_system and presents a higher level interface to develop algorithms for multi-robot systems. The pkgs are designed to be ready to deploy with the mrs_uav_system without any changes to the codebase. This has drastically reduced the time from idea to implementation.
+
+## Key ideas and features
+- assumes the algorithm to be implemented as a ros nodelet 
+- the nodelet receives odometry and other essential information about other robots as input and is expected to return an appropriate control command as output
+- mrs_swarm_core also provides several ready to use pkgs for arbitrary tf connections, scheduling large scale, repeated experiments and obstacle avoidance etc.
 
 ## Package Descriptions
-#### swarm_control_manager
--
+### swarm_control_manager
+- provides a nodelet manager interface for dynamically loading and unloading custom algorithms 
+- collects all the information from different nodes and provides them as a unified input to the custom algorithm
+- uses the control command from the custom algorithm to control the UAV 
+- performs several checks to avoid common mistakes during real-world experiments 
 
-# ## Instructions to use mrs_swarm_core
+### swarm_utils 
+- provides common_tf_pub for attaching several tfs to a new frame, thus creating a global/common reference frame
+- provides math_utils for commonly used math operations, for eg., sampling random vectors from a distribution
+- provides ros_utils for eary generation of rosmsgs and conversions to other data structures
+- provides shared_gps_aggr to aggregate GPS position msgs shared over a common network
+- provides scheduler to schedule automated repeated experiments for a custom algorithm
+
+### swarm_gazebo_resources
+- provides commonly used gazebo models 
+- provides large gazebo models scanned from different real-world locations (download_large_model.sh)
+
+### forest_path_finder
+- provides an Jump Point Search based grid path planner for 2D path planning
+
+## Instructions to use mrs_swarm_core
 ---
 ### Installation 
 Run the script `installation/install.sh` to install all the required packages and gazebo resources (e.g worlds, models etc.).
 
-### Package overview
-* `forest_path_finder`
-  - Path finder implementing A-star and Jump-Point search for 2D grid. It is used as the path planner for both boids and colass package.
-* `multi_uav_dynamic_reconfig`
-  - It is used to reconfigure parameters for multiple UAVs simultaneously using a single interface.
-* `swarm_control_manager`
-  - It is the main package that handles the control of the swarm and is desinged to streamline and simplify the process of integrating and testing different swarm control approaches. This also makes it easier to deploy these algorithms to real world without any hustle. It acts as a middleware between the `mrs_uav_system` and your swarm controller.
-* `swarm_utils`
-  - It contains utility nodes that are used for simulation and real world deployment. It also has some utility functions for creating common msg types and their conversions.
-* `swarm_gazebo_resources`
-  - It contains all the models and world files generally used by swarm experiments.
-
 ### Simulating a swarm using your controller 
-*to be continued*
+- use the config file in `simulation/config/sim_config.yaml` to define the parameters for your experiment
+- run the simulation using `./simulate_swarm.sh -f config/sim_config.yaml` in `simulation` directory

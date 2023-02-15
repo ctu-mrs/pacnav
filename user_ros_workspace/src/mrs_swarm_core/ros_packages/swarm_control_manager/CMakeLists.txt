@@ -37,7 +37,7 @@ set(Eigen_LIBRARIES ${EIGEN3_LIBRARIES})
 
 catkin_package(
   INCLUDE_DIRS include
-  LIBRARIES SwarmControlManager TestController 
+  LIBRARIES SwarmControlManager
   CATKIN_DEPENDS roscpp mrs_lib mrs_msgs std_msgs geometry_msgs nav_msgs
 )
 
@@ -56,16 +56,9 @@ include_directories(
 ## Declare a C++ library
 # add_library(SimpleObstacleDetector src/SimpleObstacleDetector.cpp)
 add_library(SwarmControlManager src/swarm_control_manager.cpp)
-add_library(TestController src/test_controller.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(SwarmControlManager
-  ${catkin_LIBRARIES}
-  ${Eigen_LIBRARIES}
-)
-
-target_link_libraries(TestController 
-  SwarmControlManager
   ${catkin_LIBRARIES}
   ${Eigen_LIBRARIES}
 )
@@ -89,11 +82,6 @@ target_link_libraries(TestController
 #   ${catkin_LIBRARIES}
 #   ${Eigen_LIBRARIES}
 # )
-
-# add_dependencies(TestAgent
-#   ${${PROJECT_NAME}_EXPORTED_TARGETS}
-#   ${catkin_EXPORTED_TARGETS}
-#   )
 
 # target_link_libraries(
 #   SimpleObstacleDetector

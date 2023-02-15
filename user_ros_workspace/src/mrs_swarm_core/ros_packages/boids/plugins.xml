@@ -1,5 +1,0 @@
-<library path="lib/libBoidsController">
-  <class name="boids/BoidsController" type="boids::BoidsController" base_class_type="swarm_control_manager::SwarmController">
-    <description>Boids controller nodelet</description>
-  </class>
-</library>

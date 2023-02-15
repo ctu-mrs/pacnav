@@ -6,17 +6,5 @@ required_resolution: 0.0625
 min_safe_distance: 1.00 #must be atleast equal to drone_radius 
 max_caution_distance: 1.50 #must be more than min safe distance
 
-# not yet used
-trajectory_velocity: 0.4
-
 publish_local_map: false 
 local_map_distance: 8 
-
-uvdar_topics: ['uvdar_pose1', 'uvdar_pose2', 'uvdar_pose3', 'uvdar_pose4']
-uvdar_uav_names: ['uav46', 'uav49', 'uav47', 'uav45'] #for real UAVs
-uvdar_invalidate_time: 1
-# it is then further inflated
-uvdar_uav_size: 1
-# now changed in the launch file
-# use_uvdar: tru
-

@@ -3,9 +3,3 @@
     <description>Swarm Control Manager nodelet</description>
   </class>
 </library>
-
-<library path="lib/libTestController">
-  <class name="swarm_control_manager/TestController" type="test_controller::TestController" base_class_type="swarm_control_manager::SwarmController">
-    <description>Test agent</description>
-  </class>
-</library>

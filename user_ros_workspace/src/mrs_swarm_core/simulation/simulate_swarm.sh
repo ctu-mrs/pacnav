@@ -192,7 +192,7 @@ window_commands['run_swarm_ctrl']='history -s rosservice call /$UAV_NAME/uav_man
 history -s rosservice call /$UAV_NAME/swarm_control_manager/activate_controller;
 history -s rosservice call /$UAV_NAME/swarm_control_manager/run_controller'
 window_commands['goto']='history -s rosservice call /$UAV_NAME/path_finder/path_goto'
-window_commands['path_finder']='waitForControl; roslaunch forest_path_finder path_finder.launch use_uvdar:=false'
+window_commands['path_finder']='waitForControl; roslaunch forest_path_finder path_finder.launch'
 window_commands['hector']='waitForSimulation; roslaunch mrs_uav_general hector_slam.launch map_size:=3000'
 window_commands['spawn']='waitForSimulation; sleep 2;
 rosservice call /mrs_drone_spawner/spawn "$UAV_NUM $UAV_TYPE --pos_file '$sim_resource_path'/config/gazebo_config/init_uav_pose/'$exp_world'.yaml --enable-rangefinder --enable-rplidar"'
