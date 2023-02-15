@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<package format="2">
+
+  <name>swarm_control_manager</name>
+  <version>0.0.1</version>
+  <description>Control manager for Swarming</description>
+
+  <maintainer email="afzalhmd14@gmail.com">Afzal Ahmad</maintainer>
+
+  <license>free of charge</license>
+
+  <author  email="afzalhmd14@gmail.com">Afzal Ahmad</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>roscpp</depend>
+  <depend>catkin_modules</depend>
+  <depend>nodelet</depend>
+  <depend>geometry_msgs</depend>
+  <depend>mrs_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>mrs_lib</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>dynamic_reconfigure</depend>
+  <depend>swarm_utils</depend>
+
+  <export>
+
+    <nodelet plugin="${prefix}/plugins.xml" />
+    <swarm_control_manager plugin="${prefix}/plugins.xml" />
+
+  </export>
+
+</package>

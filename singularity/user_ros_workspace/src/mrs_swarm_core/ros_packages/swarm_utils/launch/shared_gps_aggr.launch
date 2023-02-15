@@ -1,0 +1,42 @@
+<launch>
+
+  <!-- defines name of the namespace of the drone -->
+  <arg name="uav_name" default="$(optenv UAV_NAME uav1)" />
+
+  <!-- <arg name="simulation" default="true" /> -->
+  <!-- <arg name="run_type" default="$(optenv RUN_TYPE simulation)" /> -->
+  <!-- <arg if="$(eval arg('run_type') == 'uav')" name="simulation" value="false" /> -->
+  <arg name="origin_frame" default="gps_origin" />
+  <arg name="gps_topic_name" default="odom_gps" />
+
+  <!-- will it run using GNU debugger? -->
+  <arg name="debug" default="false" />
+  <arg unless="$(arg debug)" name="launch_prefix_debug" value=""/>
+  <arg     if="$(arg debug)" name="launch_prefix_debug" value="debug_roslaunch"/>
+
+  <!-- will it run as standalone nodelet or using a nodelet manager? -->
+  <arg name="standalone" default="true" />
+  <arg name="manager" default="$(arg uav_name)_swarm_control_manager" />
+  <arg unless="$(arg standalone)" name="nodelet" value="load"/>
+  <arg     if="$(arg standalone)" name="nodelet" value="standalone"/>
+  <arg unless="$(arg standalone)" name="nodelet_manager" value="$(arg manager)"/>
+  <arg     if="$(arg standalone)" name="nodelet_manager" value=""/>
+
+  <!-- Namespace -->
+  <group ns="$(arg uav_name)/swarm_utils">
+
+    <!-- <node pkg="nodelet" type="nodelet" name="$(arg manager)"  args="manager" output="screen"/> -->
+    <!-- SharedGpsAggr nodelet -->
+    <node pkg="nodelet" type="nodelet" name="shared_gps_aggr" args="$(arg nodelet) swarm_utils/nodes/SharedGpsAggr $(arg nodelet_manager)" output="screen" respawn="false" launch-prefix="$(arg launch_prefix_debug)">
+
+      <!-- Parameters loaded from launch file -->
+      <param name="uav_name" value="$(arg uav_name)" />
+      <param name="origin_frame" value="$(arg origin_frame)" />
+      <param name="gps_topic_name" value="$(arg gps_topic_name)" />
+
+      <!-- ROS parameters config file -->
+      <rosparam file="$(find swarm_utils)/config/shared_gps_aggr.yaml" />
+
+    </node>
+  </group>
+</launch>

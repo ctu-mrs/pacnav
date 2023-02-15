@@ -1,0 +1,46 @@
+<launch>
+
+  <arg name="uav_name" default="$(optenv UAV_NAME uav)" />
+  <arg name="origin_frame" default="hector_origin" />
+  <arg name="use_uvdar" default="false" />
+
+    <!-- will it run using GNU debugger? -->
+  <arg name="debug" default="false" />
+  <arg unless="$(arg debug)" name="launch_prefix_debug" value=""/>
+  <arg     if="$(arg debug)" name="launch_prefix_debug" value="debug_roslaunch"/>
+
+  <group ns="$(arg uav_name)">
+    
+    <node name="forest_path_finder" pkg="forest_path_finder" type="forest_path_finder" output="screen" launch-prefix="$(arg launch_prefix_debug)">
+      
+      <rosparam file="$(find forest_path_finder)/config/forest_path_finder.yaml" />
+      <param name="uav_name" type="string" value="$(arg uav_name)" />
+      <param name="origin_frame_id" type="string" value="$(arg uav_name)/$(arg origin_frame)" />
+      <param name="use_uvdar" type="bool" value="$(arg use_uvdar)" />
+
+      <!-- Subscribers -->
+      <remap from="~hector_map_in" to="/$(arg uav_name)/hector_mapping/map" />
+      <remap from="~position_command_in" to="/$(arg uav_name)/control_manager/position_cmd" />
+
+      <!-- Uvdar Subscribers -->
+      <remap from="~uvdar_pose1" to="uvdar/filteredPose1" />
+      <remap from="~uvdar_pose2" to="uvdar/filteredPose2" />
+      <remap from="~uvdar_pose3" to="uvdar/filteredPose3" />
+      <remap from="~uvdar_pose4" to="uvdar/filteredPose4" />
+        
+      <!-- Services -->
+      <remap from="~path_goto_in" to="/$(arg uav_name)/path_finder/path_goto" />
+      <remap from="~set_trajectory_out" to="/$(arg uav_name)/control_manager/mpc_tracker/set_trajectory" />
+
+      <!-- Publishers -->
+      <remap from="~distance_map" to="/$(arg uav_name)/path_finder/distance_map" />
+      <remap from="~path_map" to="/$(arg uav_name)/path_finder/path_map" />
+      <remap from="~path" to="/$(arg uav_name)/path_finder/path" />
+      <remap from="~clean_map" to="/$(arg uav_name)/path_finder/clean_map" />
+
+    </node>
+    <!-- <node name="throttle_distance_map" type="throttle" pkg="topic_tools" args="messages /$(arg uav_name)/path_finder/distance_map 1 /republished_distance_map"/> -->
+
+</group>
+
+</launch>

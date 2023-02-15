@@ -1,0 +1,20 @@
+uav_radius: 1.0
+flock_safety_rad: 4.0
+lidar_range: 10
+invalidate_time: 1.0
+path_invalidate_time: 4.0
+sigma_occlusion: 0.1
+# track neighbors to keep in camera view and use occlusions
+# should be removed later when UVDAR is no longer used for simulation
+track_neighbors: true
+
+obst_f_max_dist: 1.5 #3
+obst_f_const: 1.0
+k_nav: 1.2
+
+takeoff_height: 2.5
+
+path_in: "path_finder/path"
+mrs_uav_status_out: "mrs_uav_status/display_string"
+set_path_fndr: "path_finder/path_goto"
+set_goal: "pacnav_controller/goto"

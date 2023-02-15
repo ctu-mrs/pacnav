@@ -1,0 +1,122 @@
+constraints: [
+  "slow",
+  "medium",
+  "fast",
+]
+
+constraint_management:
+
+  allowed_constraints:
+    GPS: ["slow", "medium", "fast"]
+    ALOAM: ["slow"]
+    ALOAMREP: ["slow"]
+
+  fallback_constraints:
+    GPS: "slow"
+    ALOAM: "slow"
+    ALOAMREP: "slow"
+
+slow:
+
+  horizontal:
+    speed: 2.0
+    acceleration: 1.0
+    jerk: 20.0
+    snap: 20.0
+
+  vertical:
+
+    ascending:
+      speed: 2.0
+      acceleration: 1.0
+      jerk: 20.0
+      snap: 20.0
+
+    descending:
+      speed: 2.0
+      acceleration: 1.0
+      jerk: 20.0
+      snap: 20.0
+
+  heading:
+    speed: 1.0
+    acceleration: 1.0
+    jerk: 20.0
+    snap: 20.0
+
+  angular_speed:
+    roll: 60.0
+    pitch: 60.0
+    yaw: 10.0
+
+  tilt: deg(60)
+
+medium:
+
+  horizontal:
+    speed: 4.0
+    acceleration: 2.0
+    jerk: 20.0
+    snap: 20.0
+
+  vertical:
+
+    ascending:
+      speed: 2.0
+      acceleration: 2.0
+      jerk: 20.0
+      snap: 20.0
+
+    descending:
+      speed: 2.0
+      acceleration: 2.0
+      jerk: 20.0
+      snap: 20.0
+
+  heading:
+    speed: 1.0
+    acceleration: 1.0
+    jerk: 20.0
+    snap: 20.0
+
+  angular_speed:
+    roll: 60.0
+    pitch: 60.0
+    yaw: 10.0
+
+  tilt: deg(60)
+
+fast:
+
+  horizontal:
+    speed: 6.0
+    acceleration: 3.0
+    jerk: 30.0
+    snap: 30.0
+
+  vertical:
+
+    ascending:
+      speed: 4.0
+      acceleration: 2.0
+      jerk: 30.0
+      snap: 30.0
+
+    descending:
+      speed: 4.0
+      acceleration: 2.0
+      jerk: 30.0
+      snap: 30.0
+
+  heading:
+    speed: 1.0
+    acceleration: 1.0
+    jerk: 20.0
+    snap: 20.0
+
+  angular_speed:
+    roll: 60.0
+    pitch: 60.0
+    yaw: 10.0
+
+  tilt: deg(60)

@@ -1,0 +1,11 @@
+allowed_data:
+  self_data: ['hector_map', 'laser_scan']
+  neighbor_data: []
+
+neighbor_localization_types: ['uvdar', 'shared_gps']
+control_types: ['path', 'velocity']
+
+control_timer_rate: 20 # (Hz)
+invalidate_time: 1 # (s)
+traj_gen_time: 0.2 # (s)
+vel_max: 1.0 # (m/s)

@@ -1,0 +1,5 @@
+<library path="lib/libSwarmControlManager">
+  <class name="swarm_control_manager/SwarmControlManager" type="swarm_control_manager::SwarmControlManager" base_class_type="nodelet::Nodelet">
+    <description>Swarm Control Manager nodelet</description>
+  </class>
+</library>

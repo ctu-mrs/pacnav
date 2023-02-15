@@ -1,0 +1,19 @@
+publish_rate:
+  main: 100 # [Hz] main and aux odometry
+
+# Altitude state estimator:
+# HEIGHT - rangefinder
+altitude_estimator: "HEIGHT"
+
+altitude:
+
+  # Covariances of measurements
+  R:
+    height_range: [1000.0]
+
+# Active estimators are started at node launch and can be switched to during flight
+state_estimators:
+  active: ["GPS"]
+
+heading_estimators:
+  active: ["GYRO", "PIXHAWK"]

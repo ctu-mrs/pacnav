@@ -1,0 +1,14 @@
+PacnavController:
+  address: "pacnav/PacnavController"
+  ros_name_space: "pacnav"
+
+  required_data:
+    self_data: ['laser_scan']
+    neighbor_data: []
+
+  neighbor_localization: 'shared_gps'
+  control_type: 'velocity'
+
+controller_names: ['PacnavController']
+
+initial_controller: 'PacnavController'

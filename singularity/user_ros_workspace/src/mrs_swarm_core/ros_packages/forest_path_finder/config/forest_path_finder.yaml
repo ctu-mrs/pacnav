@@ -1,0 +1,10 @@
+# minimal resolution
+required_resolution: 0.0625
+
+# distances to obstacles
+# including the drone radius 
+min_safe_distance: 1.00 #must be atleast equal to drone_radius 
+max_caution_distance: 1.50 #must be more than min safe distance
+
+publish_local_map: false 
+local_map_distance: 8 

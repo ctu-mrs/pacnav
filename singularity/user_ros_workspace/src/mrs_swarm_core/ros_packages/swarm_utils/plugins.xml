@@ -1,0 +1,11 @@
+<library path="lib/libSharedGpsAggr">
+  <class name="swarm_utils/nodes/SharedGpsAggr" type="swarm_utils::nodes::SharedGpsAggr" base_class_type="nodelet::Nodelet">
+    <description>Shared GPS aggregator nodelet</description>
+  </class>
+</library>
+
+<library path="lib/libCommonTfPub">
+  <class name="swarm_utils/nodes/CommonTfPub" type="swarm_utils::nodes::CommonTfPub" base_class_type="nodelet::Nodelet">
+    <description>CommonTfPublisher nodelet</description>
+  </class>
+</library>

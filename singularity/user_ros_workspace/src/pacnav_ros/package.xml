@@ -1,0 +1,42 @@
+<?xml version="1.0"?>
+<package format="2">
+
+  <name>pacnav</name>
+  <version>0.0.1</version>
+  <description>PACNav: Persistence Administered Collective Navigation</description>
+
+  <maintainer email="afzalhmd14@gmail.com">Afzal Ahmad</maintainer>
+
+  <license>free of charge</license>
+
+  <author  email="afzalhmd14@gmail.com">Afzal Ahmad</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>cmake_modules</depend>
+  <depend>pluginlib</depend>
+  <depend>roscpp</depend>
+  <depend>nodelet</depend>
+  <depend>geometry_msgs</depend>
+  <depend>mrs_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>sensor_msgs</depend>
+  <depend>nav_msgs</depend>
+  <depend>mrs_lib</depend>
+  <depend>tf2</depend>
+  <depend>tf2_geometry_msgs</depend>
+  <depend>message_generation</depend>
+  <depend>message_runtime</depend>
+  <depend>dynamic_reconfigure</depend>
+  <depend>multi_uav_dynreconfig</depend>
+  <depend>swarm_control_manager</depend>
+  <depend>swarm_utils</depend>
+
+  <export>
+
+    <!-- The plugins.xml file defines nodelet as a plugin -->
+    <swarm_control_manager plugin="${prefix}/plugins.xml" />
+
+  </export>
+
+</package>

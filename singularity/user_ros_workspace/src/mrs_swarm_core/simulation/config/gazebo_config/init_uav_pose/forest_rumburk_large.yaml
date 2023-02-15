@@ -1,0 +1,56 @@
+# Rumburk forest world
+uav1:
+  id: 1
+  x: -2.5 
+  y: -1.0 
+  z: 3.5 
+  heading: 0.0
+
+uav2:
+  id: 2
+  x: 0.4
+  y: -3.6
+  z: 3.3 
+  heading: 0.0
+  
+uav3:
+  id: 3
+  x: 5.8
+  y: -2.8    
+  z: 3.0 
+  heading: 0.0 
+
+uav4:
+  id: 4
+  x: 1.5 
+  y: 0.7
+  z: 3.3 
+  heading: 0.0 
+
+uav5:
+  id: 5
+  x: 3.0
+  y: -6.3
+  z: 3.2 
+  heading: 0.0 
+
+uav6:
+  id: 6
+  x: 8.5
+  y: 0.3
+  z: 3.2 
+  heading: 0.0 
+
+uav7:
+  id: 7
+  x: -1.18
+  y: 1.8
+  z: 3.4 
+  heading: 0.0 
+
+uav8:
+  id: 8
+  x: -4.6
+  y: -2.3
+  z: 3.5 
+  heading: 0.0 

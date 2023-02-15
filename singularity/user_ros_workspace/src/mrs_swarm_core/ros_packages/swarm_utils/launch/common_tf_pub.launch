@@ -1,0 +1,39 @@
+<launch>
+
+  <arg name="uav_name" default="$(env UAV_NAME)"/>
+  <arg name="uav_frame" default="fcu_untilted" />
+  <arg name="origin_frame" default="local_origin" />
+  <arg name="global_frame" default="global_origin" />
+  <arg name="init_pose_file" default="none" />
+
+  <!-- will it run using GNU debugger? -->
+  <arg name="debug" default="false" />
+  <arg unless="$(arg debug)" name="launch_prefix_debug" value=""/>
+  <arg     if="$(arg debug)" name="launch_prefix_debug" value="debug_roslaunch"/>
+
+  <!-- will it run as standalone nodelet or using a nodelet manager? -->
+  <arg name="standalone" default="true" />
+  <arg name="manager" default="$(arg uav_name)_colass_uav_manager" />
+  <arg unless="$(arg standalone)" name="nodelet" value="load"/>
+  <arg     if="$(arg standalone)" name="nodelet" value="standalone"/>
+  <arg unless="$(arg standalone)" name="nodelet_manager" value="$(arg manager)"/>
+  <arg     if="$(arg standalone)" name="nodelet_manager" value=""/>
+
+  <group ns="$(arg uav_name)/swarm_utils">
+
+    <!-- Transformer nodelet -->
+    <node pkg="nodelet" type="nodelet" name="common_tf_pub" args="$(arg nodelet) swarm_utils/nodes/CommonTfPub $(arg nodelet_manager)" output="screen" respawn="false">
+<!-- launch-prefix="$(arg launch_prefix_debug)" -->
+      <!-- Parameters loaded from launch file -->
+      <param name="uav_name" value="$(arg uav_name)" />
+      <param name="uav_frame_id" value="$(arg uav_name)/$(arg uav_frame)" />
+      <param name="origin_frame_id" value="$(arg uav_name)/$(arg origin_frame)" />
+      <param name="global_origin_frame_id" value="$(arg global_frame)" />
+
+      <!-- ROS parameters config file -->
+      <rosparam file="$(find swarm_utils)/config/common_tf_pub.yaml" />
+      <rosparam file="$(arg init_pose_file)" />
+
+    </node>
+  </group>
+</launch>

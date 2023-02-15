@@ -1,0 +1,13 @@
+TestController:
+  address: "swarm_control_manager/TestController" # should be same as the class name in the plugins.xml of the pkg
+  ros_name_space: "test_controller" # should be same as the pkg name
+
+  required_data:
+    self_data: ['laser_scan']
+    neighbor_data: []
+
+  neighbor_localization: 'shared_gps'
+  control_type: 'path'
+
+controller_names: ['TestController']
+initial_controller: 'TestController'

@@ -1,0 +1,57 @@
+<launch>
+  <!-- defines name of the namespace of the drone -->
+  <arg name="uav_name" default="$(optenv UAV_NAME uav1)" />
+  <arg name="uav_frame" default="fcu" />
+  <arg name="origin_frame" default="local_origin" />
+  <arg name="controller_pkg" default="test_controller" />
+
+  <!-- will it run using GNU debugger? -->
+  <arg name="debug" default="false" />
+  <arg unless="$(arg debug)" name="launch_prefix_debug" value=""/>
+  <arg     if="$(arg debug)" name="launch_prefix_debug" value="debug_roslaunch"/>
+
+  <!-- will it run as standalone nodelet or using a nodelet manager? -->
+  <arg name="standalone" default="true" />
+  <arg name="manager" default="$(arg uav_name)_swarm_control_manager" />
+  <arg unless="$(arg standalone)" name="nodelet" value="load"/>
+  <arg     if="$(arg standalone)" name="nodelet" value="standalone"/>
+  <arg unless="$(arg standalone)" name="nodelet_manager" value="$(arg manager)"/>
+  <arg     if="$(arg standalone)" name="nodelet_manager" value=""/>
+
+  <!-- Namespace -->
+  <group ns="$(arg uav_name)">
+
+    <!-- SwarmControlManager nodelet -->
+    <node pkg="nodelet" type="nodelet" name="swarm_control_manager" args="$(arg nodelet) swarm_control_manager/SwarmControlManager $(arg nodelet_manager)" output="screen" respawn="false" launch-prefix="$(arg launch_prefix_debug)">
+
+      <!-- Parameters loaded from launch file -->
+      <param name="uav_name" value="$(arg uav_name)" />
+      <param name="uav_frame_id" value="$(arg uav_name)/$(arg uav_frame)" />
+      <param name="origin_frame_id" value="$(arg uav_name)/$(arg origin_frame)" />
+
+      <!-- ROS parameters config file -->
+      <rosparam file="$(find swarm_control_manager)/config/swarm_control_manager.yaml" />
+      <rosparam file="$(find swarm_control_manager)/config/plugin_specs.yaml" />
+      <rosparam if="$(eval arg('controller_pkg') != 'test_controller')" file="$(eval find(controller_pkg) + '/config/plugin_specs.yaml')" />
+
+      <rosparam ns="$(arg controller_pkg)" file="$(find swarm_control_manager)/config/test_controller.yaml" />
+      <rosparam if="$(eval arg('controller_pkg') != 'test_controller')" ns="$(arg controller_pkg)" file="$(eval find(controller_pkg) + '/config/' + arg('controller_pkg') + '.yaml')" />
+
+      <!-- Subscribers -->
+      <remap from="~odom_in" to="control_manager/position_cmd" />
+      <remap from="~hector_map_in" to="hector_mapping/map" />
+      <remap from="~laser_scan_in" to="rplidar/scan" />
+
+      <remap from="~uvdar_in" to="uvdar/filteredPoses" />
+      <remap from="~shared_gps_in" to="swarm_utils/shared_gps_aggr/aggr_poses" />
+
+      <!-- Publishers -->
+      <remap from="~vel_ref" to="control_manager/velocity_reference" />
+
+      <!-- Service clients -->
+      <remap from="~switch_tracker" to="control_manager/switch_tracker" />
+      <remap from="~path_ref" to="trajectory_generation/path" />
+
+    </node>
+  </group>
+</launch>

@@ -1,0 +1,36 @@
+<launch>
+
+  <arg name="episode_count" default="0" />
+  <arg name="uav_count" default="1" />
+  <arg name="leader_count" default="1" />
+  <arg name="inter_uav_dist" default="2.0" /> 
+
+  <!-- timeout needed by 1 uav, this is scaled by uav_count -->
+  <arg name="preflight_timeout" default="15.0" />
+
+  <!-- max time after which the experiment does not make sense -->
+  <arg name="max_timeout" default="600.0" />
+  <arg name="goal_x" default="20.0" />
+  <arg name="goal_y" default="0.0" />
+  <arg name="setgoal_srv" default="/pacnav_controller/goto" />
+  <arg name="runswarm_srv" default="/swarm_control_manager/run_controller" />
+  <arg name="bag_file_dir" default="" />
+
+    <!-- Scheduler node -->
+    <node pkg="swarm_utils" type="scheduler.py" name="scheduler" output="screen" respawn="false">
+
+      <!-- Parameters loaded from launch file -->
+      <param name="episode_count" value="$(arg episode_count)" />
+      <param name="uav_count" value="$(arg uav_count)" />
+      <param name="leader_count" value="$(arg leader_count)" />
+      <param name="inter_uav_dist" value="$(arg inter_uav_dist)" />
+      <param name="preflight_timeout" value="$(arg preflight_timeout)" />
+      <param name="max_timeout" value="$(arg max_timeout)" />
+      <param name="goal_x" value="$(arg goal_x)" />
+      <param name="goal_y" value="$(arg goal_y)" />
+      <param name="setgoal_srv" value="$(arg setgoal_srv)" />
+      <param name="runswarm_srv" value="$(arg runswarm_srv)" />
+      <param name="bag_file_dir" value="$(arg bag_file_dir)" />
+
+    </node>
+  </launch>
