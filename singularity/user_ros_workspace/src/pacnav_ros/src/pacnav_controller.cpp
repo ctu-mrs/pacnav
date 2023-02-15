@@ -9,6 +9,14 @@ namespace pacnav
 
   /* initialize() //{ */
 
+  /**
+   * @brief Initializes the plugin using the parent node handle.
+   *
+   * @param parent_nh The parent node handle.
+   * @param name Name assigned by the nodelet manager (swarm_control_manager for these plugins).
+   * @param ros_name_space Name of the ros node and plugin which forms the namespace of the plugin.
+   * @param transformer Shared pointer to a transfromer object for tf transformations (mrs_lib::Transformer).
+   */
   void PacnavController::initialize(const ros::NodeHandle& parent_nh, const std::string& name, const std::string& ros_name_space, std::shared_ptr<mrs_lib::Transformer> transformer) {
 
     // | ---------------- set my booleans to false ---------------- |
@@ -29,7 +37,8 @@ namespace pacnav
     ros::Time::waitForValid();
 
     // | ------------------- load ros parameters ------------------ |
-    /* (mrs_lib implementation checks whether the parameter was loaded or not) */
+    /* mrs_lib implementation of param loader
+     * checks whether the parameter was loaded or not */
     mrs_lib::ParamLoader pl_parent(parent_nh, "PacnavController");
 
     /* first load the params provided by the parent handle (swarm_control_manager) */
@@ -38,11 +47,14 @@ namespace pacnav
     pl_parent.loadParam("origin_frame_id", _origin_frame_id_);
     _max_vel_ = pl_parent.loadParam2<double>("vel_max");
 
+    /* use lidar for obstacle avoidance and agent occlusion detection when laser_scan is provided */
     vector<string> req_self_data = pl_parent.loadParam2<vector<string>>("PacnavController/required_data/self_data");
     if (std::find(req_self_data.begin(), req_self_data.end(), "laser_scan") != req_self_data.end()) {
       use_lidar_ = true;
     }
 
+    /* use map for obstacle avoidance (using the forest_path_finder pkg from mrs_swarm_core) when
+     * hector map data is provided */
     if (std::find(req_self_data.begin(), req_self_data.end(), "hector_map") != req_self_data.end()) {
       use_map_ = true;
     }
@@ -53,7 +65,6 @@ namespace pacnav
     /* parameters for the UAV and simulation */
     _uav_radius_ = pl_child.loadParam2<double>("uav_radius");
     _takeoff_height_ = pl_child.loadParam2<double>("takeoff_height");
-    _track_neighbors_  = pl_child.loadParam2<bool>("track_neighbors");
     _sigma_occl_ = pl_child.loadParam2<double>("sigma_occlusion");
     _lidar_range_ = pl_child.loadParam2<double>("lidar_range");
 
@@ -64,6 +75,11 @@ namespace pacnav
     _flock_safety_rad_ = pl_child.loadParam2<double>("flock_safety_rad");
     _invalidate_time_ = pl_child.loadParam2<double>("invalidate_time");
     _path_invalidate_time_ = pl_child.loadParam2<double>("path_invalidate_time");
+
+    auto name_path_in_ = pl_child.loadParam2<string>("path_in");
+    auto name_status_out_ = pl_child.loadParam2<string>("mrs_uav_status_out");
+    auto name_goal_in_ = pl_child.loadParam2<string>("set_goal");
+    auto name_path_finder_out_ = pl_child.loadParam2<string>("set_path_fndr");
 
     /* check if all parameters were loaded successfully */ 
     if (!pl_parent.loadedSuccessfully() || !pl_child.loadedSuccessfully())
@@ -89,7 +105,7 @@ namespace pacnav
 
       mrs_lib::construct_object(sh_des_path_,
           shopts,
-          pl_child.loadParam2<string>("path_in")
+          name_path_in_
           );
     }
 
@@ -104,25 +120,25 @@ namespace pacnav
     pub_viz_neighbor_paths_ = nh.advertise<visualization_msgs::MarkerArray>("viz/neighbor_paths", 1);
     pub_viz_neighbor_states_ = nh.advertise<visualization_msgs::Marker>("viz/neighbor_states", 1);
 
-    pub_mrs_uav_status_ = nh_g.advertise<std_msgs::String>(pl_child.loadParam2<string>("mrs_uav_status_out"), 1);
+    pub_mrs_uav_status_ = nh_g.advertise<std_msgs::String>(name_status_out_, 1);
 
     // | --------------- initialize service servers --------------- |
 
-    srv_set_goal_ = nh_g.advertiseService(pl_child.loadParam2<string>("set_goal"), &PacnavController::callbackSetGoal, this);
+    srv_set_goal_ = nh_g.advertiseService(name_goal_in_, &PacnavController::callbackSetGoal, this);
 
     // | --------------- initialize service clients --------------- |
 
-    client_path_fndr_ = nh_g.serviceClient<mrs_msgs::Vec4>(pl_child.loadParam2<string>("set_path_fndr"));
+    client_path_fndr_ = nh_g.serviceClient<mrs_msgs::Vec4>(name_path_finder_out_);
 
     // | ---------- initialize private class varibales ------------------- |
 
-    /* target should always be in origin frame because it is preserved over time and has low drift*/
-    /* all uav target ids are geq 0 and non-uav target ids less than 0 */
-    /* self id is -1 which is also the idle target */ 
+    /* target should always be in origin frame because it is preserved over time and has low drift
+    * all uav target ids are >= 0 and non-uav target ids < 0
+    * self id is -1 which is also the when no UAV is idle i.e. w/out target */ 
     target_.id = -1;
     target_.header = swm_r_utils::createHeader(_origin_frame_id_, ros::Time::now());
 
-    /* des velocity is easy to reason about in the uav frame */
+    /* desired velocity is easy to reason about in the uav frame */
     cur_des_vel_.header = swm_r_utils::createHeader(_uav_frame_id_, ros::Time::now());
     cur_des_vel_.vector = swm_r_utils::createVector3(0, 0, 0);
 
@@ -133,6 +149,9 @@ namespace pacnav
 
   /* activate() //{ */
 
+  /**
+   * @brief Activates the plugin.
+   */
   void PacnavController::activate() {
 
     is_active_ = true;
@@ -143,6 +162,9 @@ namespace pacnav
 
   /* deactivate() //{ */
 
+  /**
+   * @brief Deactivates the plugin.
+   */
   void PacnavController::deactivate() {
 
     is_active_ = false;
@@ -153,8 +175,16 @@ namespace pacnav
 
   /* update() //{ */
 
+  /**
+   * @brief Updates the internal states of the algorithm and computes a control command.
+   *
+   * @param common_data Shared pointer from swarm_control_manager nodelet to provide all required input data.
+   *
+   * @return A control command of one of the types specified by the swarm_control_manager.
+   */
   std::optional<std::any> PacnavController::update(std::shared_ptr<swm_ctrl::SwarmCommonDataHandler> common_data) {
 
+    /* do not update if the plugin hasn't initialized or is inactive */
     if (!is_init_ || !is_active_) { 
       return nullopt;
     }
@@ -189,8 +219,8 @@ namespace pacnav
       
     }
 
-    /* lidar data is fixed in a z-shifted uav frame, not easy to transform */
-    /* can be used directly as x-y axis align with uav frame */
+    /* lidar data is fixed in a z-shifted uav frame, not easy to transform
+    * can be used directly as x-y axis align with uav frame */
     sensor_msgs::LaserScanConstPtr lidar_data;
 
     if (use_lidar_) {
@@ -215,8 +245,8 @@ namespace pacnav
 
       updateNeighborStates(neighbor_states_, rec_neighbor_states, los_stamps_, lidar_data);
 
-      /* paths should be stored in origin frame as it does not move with the uav */
-      /* update path before tf */
+      /* observed UAV paths should be stored in origin frame as it does not move with the uav
+      * update path before tf */
       updateNeighborPaths(neighbor_paths_, neighbor_states_);
 
       rel_neighbor_states.header.frame_id = _uav_frame_id_;
@@ -250,7 +280,7 @@ namespace pacnav
 
     string status_data;
 
-    /* select the target using path similarity and persistence or set it manually */
+    /* select the target using path similarity and persistence or set it manually from a goal */
     if(got_goal_) {
 
       std::scoped_lock goal_lck(mutex_goal_);
@@ -263,7 +293,7 @@ namespace pacnav
       ROS_INFO_THROTTLE(3, "[PacnavController] Received goal, I am an informed UAV");
 
       /* this status is shown by the MRS-status tab */
-      status_data = "UAVs: " + std::to_string(int(rel_neighbor_states.states.size())) + ", T set by service";
+      status_data = "UAVs: " + std::to_string(int(rel_neighbor_states.states.size())) + ", T set by goal service";
     }
     else {
       ROS_INFO_THROTTLE(3, "[PacnavController] No goal from HUMAN, I am uninformed, searching for viable target");
@@ -274,16 +304,22 @@ namespace pacnav
       status_data  = "UAVs: " + std::to_string(int(rel_neighbor_states.states.size())) + ", T: " + std::to_string(target_.id);
     }
 
+    /* publish info to mrs_uav_status node for easy debug */
+    std_msgs::String msg_mrs_uav_status;
+    msg_mrs_uav_status.data = status_data;
+    pub_mrs_uav_status_.publish(msg_mrs_uav_status);
+
+    /* publish target for visualization in Rviz */
     pub_viz_target_.publish(swm_r_utils::createPointStamped(target_.header, target_.point));
 
     nav_msgs::Path des_path;
 
-    /* get a path to the target using path finder (A* impl) */
-    /* or just move to the target if no path finder or map is present */
+    /* get a path to the target using path finder (A* implementation)
+    * or just directly move to the target if no path finder or map is present */
     if (use_map_) {
       mrs_msgs::Vec4 msg_path_fndr;
 
-      /* target must be in origin frame as path findr assumes the frame */
+      /* target must be in origin frame as path finder assumes the frame */
       if (target_.header.frame_id == _origin_frame_id_) {
         msg_path_fndr.request.goal[0] = target_.point.x;
         msg_path_fndr.request.goal[1] = target_.point.y;
@@ -299,7 +335,7 @@ namespace pacnav
 
           if(sh_des_path_.newMsg()){
 
-            /* des path is also assumed to be in map origin frame */
+            /* desired path is also assumed to be in map origin frame */
             des_path = *sh_des_path_.getMsg();
 
             if (des_path.header.frame_id == _origin_frame_id_) {
@@ -319,10 +355,10 @@ namespace pacnav
     }
     else {
 
-      /* if no map is present, the uav can just move to the target without path planning */
-      /* but will still use lidar for obst avoidance */
+      /* if no map is present, the uav can just move to the target without path planning
+      * but will still use lidar for obst avoidance */
 
-      /* des path is set to be in origin frame */
+      /* desired path is set to be in origin frame */
       des_path.header = swm_r_utils::createHeader(_origin_frame_id_, ros::Time::now());
       des_path.poses.push_back(swm_r_utils::createPoseStamped(self_state.header, self_state.state.pose));
       des_path.poses.push_back(swm_r_utils::createPoseStamped(target_.header, swm_r_utils::createPose(target_.point, geometry_msgs::Quaternion())));
@@ -330,69 +366,50 @@ namespace pacnav
       cur_des_vel_ = calcDesVel(cur_des_vel_, rel_neighbor_states, des_path, lidar_data);
     }
 
-    /* check if the des velocity was updated, clean old cmd */
+    /* check if the desired velocity was updated, clean old velocity */
     if((ros::Time::now().toSec() - cur_des_vel_.header.stamp.toSec()) > _invalidate_time_ ) {
       cur_des_vel_.header.stamp = ros::Time::now();
       cur_des_vel_.vector = swm_r_utils::createVector3(0, 0, 0);
       ROS_WARN("[PacnavController] Desired velocity cmd is old, velocity set to ZERO");
     }
 
-    /* publish info to mrs_uav_status node for easy debug */
-    std_msgs::String msg_mrs_uav_status;
-    msg_mrs_uav_status.data = status_data;
-    pub_mrs_uav_status_.publish(msg_mrs_uav_status);
-
     /* prepare the cotnrol cmd for swarm_control_manager */
     mrs_msgs::VelocityReferenceStamped vel_cmd;
     vel_cmd.header = cur_des_vel_.header;
     vel_cmd.reference.velocity = cur_des_vel_.vector;
 
-    if (_track_neighbors_ ) {
+    vel_cmd.reference.use_heading = true;
+    vel_cmd.reference.use_heading_rate = false;
 
-      /* this is the case when using UVDAR and cameras need to point to */
-      /* capture max number of uavs in FOV */
+    /* when the target is set to self position */
+    if (target_.id == -1) {
 
-      vel_cmd.reference.use_heading_rate = (rel_neighbor_states.states.size() > 0 ? false : true);
-      vel_cmd.reference.use_heading = !vel_cmd.reference.use_heading_rate;
-
-      vel_cmd.reference.heading = calcHeading(rel_neighbor_states);
-      vel_cmd.reference.heading_rate = 0.5;
+      vel_cmd.reference.heading = 0.0;
     }
     else {
 
-      vel_cmd.reference.use_heading = true;
-      vel_cmd.reference.use_heading_rate = false;
+      /* point heading to the target */
+      mrs_msgs::ReferenceStamped tmp = swm_r_utils::createReferenceStamped(target_.header, swm_r_utils::createReference(target_.point, 0.0));
+      auto res = transformer_->transformSingle(tmp, cur_des_vel_.header.frame_id);
 
-      /* when the target is set to self position */
-      if (target_.id == -1) {
+      if(res) {
 
-        vel_cmd.reference.heading = 0.0;
-      }
-      else {
+        e::Vector2d tf_target_vec{res.value().reference.position.x, res.value().reference.position.y};
 
-        /* point heading to the target */
-        mrs_msgs::ReferenceStamped tmp = swm_r_utils::createReferenceStamped(target_.header, swm_r_utils::createReference(target_.point, 0.0));
-        auto res = transformer_->transformSingle(tmp, cur_des_vel_.header.frame_id);
+        /* set heading to zero when very close to the target
+        prevents unnecessary rotations when UAVs are close */
+        if(tf_target_vec.norm() > _uav_radius_/2.0) {
 
-        if(res) {
-
-          e::Vector2d tf_target_vec{res.value().reference.position.x, res.value().reference.position.y};
-
-          /* set heading to zero when very close to the target */
-          /* prevents unnecessary rotations when UAVs are close */
-          if(tf_target_vec.norm() > _uav_radius_/2.0) {
-
-            vel_cmd.reference.heading = atan2(res.value().reference.position.y, res.value().reference.position.x);
-          }
-          else {
-
-            vel_cmd.reference.heading = 0.0;
-          }
+          vel_cmd.reference.heading = atan2(res.value().reference.position.y, res.value().reference.position.x);
         }
         else {
-          ROS_ERROR("[PacnavController] Tf 'target' failed. From %s to %s", target_.header.frame_id.c_str(), cur_des_vel_.header.frame_id.c_str());
-          return nullopt;
+
+          vel_cmd.reference.heading = 0.0;
         }
+      }
+      else {
+        ROS_ERROR("[PacnavController] Tf 'target' failed. From %s to %s", target_.header.frame_id.c_str(), cur_des_vel_.header.frame_id.c_str());
+        return nullopt;
       }
     }
 
@@ -403,21 +420,15 @@ namespace pacnav
 
   // | ---------------------- callbacks --------------------- |
 
-  /* /1* callbackPath() //{ *1/ */
-
-  /* void PacnavController::callbackPath(mrs_lib::SubscribeHandler<nav_msgs::Path>& sh) { */
-
-  /*   if (!is_init_) */
-  /*     return; */
-
-  /*   if (sh.getMsg()->header.frame_id == _origin_frame_id_) { */
-  /*     got_path_ = true; */
-  /*   } */
-  /* } */
-
-  /* //} */
-
   /* callbackSetGoal() //{ */
+  /**
+   * @brief Callback function to get goal.
+   *
+   * @param req Request containng goal as [x, y].
+   * @param res Response with frame of the goal.
+   *
+   * @return Success status of the callback function.
+   */
   bool PacnavController::callbackSetGoal(mrs_msgs::Vec4::Request &req, mrs_msgs::Vec4::Response &res) {
 
     if(!is_init_)
@@ -441,6 +452,16 @@ namespace pacnav
   // | -------------------- functions ------------------- |
 
   /* calcObstForce() //{ */
+  
+  /**
+   * @brief Calculates the collision control vector.
+   *
+   * @param prev_vel Previous velocity of the UAV
+   * @param rel_neighbor_states States of the UAVs in a frame relative to the UAV FCU frame uav/fcu.
+   * @param lidar_data Laser scan data.
+   *
+   * @return 
+   */
   e::Vector2d PacnavController::calcObstForce(geometry_msgs::Vector3Stamped& prev_vel, swm_utils::IdStateArrayStamped& rel_neighbor_states, sensor_msgs::LaserScanConstPtr lidar_data) {
 
     e::Vector2d net_force{0, 0};
@@ -478,11 +499,13 @@ namespace pacnav
 
     //}
 
+
     vector<e::Vector2d> static_obst;
     if (use_lidar_) {
       vector<double> clean_lidar = cleanLidarData(lidar_data, _lidar_range_);
       static_obst = getObstLidar(clean_lidar, _obst_f_max_dist_ + _uav_radius_);
     }
+
 
     vector<e::Vector2d> dyn_obst;
     for(auto it = rel_neighbor_states.states.begin(); it != rel_neighbor_states.states.end(); it++) {
@@ -491,8 +514,10 @@ namespace pacnav
       dyn_obst.push_back(obst_pose);
     }
 
-    /* Obst force calc for static obst//{*/
+    
+    /* calculate the force vector for static obstacles //{*/
     for(size_t i = 0; i < static_obst.size(); i++) {
+
       ROS_DEBUG_STREAM("[PacnavController] Calculating OBST FORCE for static obstacles");
       double rel_dist = static_obst[i].norm() - _uav_radius_;
       rel_dist = (rel_dist > 0.0) ? rel_dist : 0.01;
@@ -523,15 +548,16 @@ namespace pacnav
       viz_vir_obst.points.push_back(pt_s);
       viz_vir_obst.points.push_back(pt_obst);
       //}
-      /* cout<<"Vir obst force vec: "<<vir_force(0)<<", "<<vir_force(1)<<" Norm: "<<vir_force.norm()<<endl; */
+      
       msg_viz.markers.push_back(viz_vir_obst_force);
 
       net_force += vir_force;
     }
     //}
 
-    /* Obst force calc for dyn obst//{*/
+    /* calculate the force vector for dynamic obstacles i.e. UAVs //{*/
     for(size_t i = 0; i < dyn_obst.size(); i++) {
+
       ROS_DEBUG_STREAM("[PacnavController] Calculating OBST FORCE for dynamic obstacles");
       double rel_dist = dyn_obst[i].norm() - _uav_radius_;
       rel_dist = (rel_dist > 0.0) ? rel_dist : 0.01;
@@ -562,13 +588,15 @@ namespace pacnav
       viz_vir_obst.points.push_back(pt_s);
       viz_vir_obst.points.push_back(pt_obst);
       //}
-      /* cout<<"Vir obst force vec: "<<vir_force(0)<<", "<<vir_force(1)<<" Norm: "<<vir_force.norm()<<endl; */
+      
       msg_viz.markers.push_back(viz_vir_obst_force);
 
       net_force += vir_force;
     }
     //}
 
+    /* normalize the total collission control vector
+     * used as a implementation trick in dense environments */ 
     if(static_obst.size() > 0) {
       net_force = net_force / static_obst.size();
     }
@@ -970,8 +998,8 @@ namespace pacnav
     viz_n_states.color.b = 0.0;
     //}
 
-    /* the neighbor states are updated with the noise model and checked for occlusion if uvdar is being used for tracking */
-    if(_track_neighbors_  && lidar_data) {
+    /* the neighbor states are updated with the noise model and checked for occlusion */
+    if(lidar_data) {
       applyOcllusion(neighbor_states, rec_neighbor_states, los_stamps_, cleanLidarData(lidar_data, _lidar_range_));
     }
     else {
