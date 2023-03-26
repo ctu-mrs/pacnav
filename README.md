@@ -1,7 +1,21 @@
 # PACNav
 This repository contains the scripts and code to run the Gazebo simulations and real-world experiments for the paper titled "PACNav: A Collective Navigation Approach for UAV Swarms Deprived of Communication and External Localization".
 
-Source codes and datasets will be provided after publication.
+### Step 1) Installation and building containers.
+- Install `docker` and `singularity` using the install scripts provided in `pacnav/install` directory. You may skip this if you already have these dependencies installed.
+- Build the singularity image by running `./singularity/recipe/build.sh`.
+
+### Step 2) Running the container and building the ROS packages.
+- After a successful build, run the singularity container using `./singularity/run_singularity.sh` script.
+- The script will mount the `singularity/user_ros_workspace` directory into the singularity container.
+- Build the required ROS packages by running `catkin build -c` inside `singularity/user_ros_workspace`.
+
+### Step 3) Running the mutli-UAV simulation.
+- After a successful `catkin build`, run the multi-UAV simulation using ```./singularity/user_ros_workspace/src/mrs_swarm_core/simulation/simulate_swarm.sh -f config/sim_config.yaml```
+- The parameters for setting up the multi-UAV simulation are in the `singularity/user_ros_workspace/src/mrs_swarm_core/simulation/config/sim_config.yaml` file. You can play around with them as you please.
+
+### Citation
+Please use the citation below if you find our work useful :blush:.
 
 ```
 @ARTICLE{Ahmad2022Bioinspired,
