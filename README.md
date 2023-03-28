@@ -17,8 +17,8 @@ This repository contains the scripts and code to run the Gazebo simulations and 
 ### Citation
 Please use the citation below if you find our work useful :blush:.
 
-```
-@ARTICLE{Ahmad2022Bioinspired,
+```bibtex
+@acticle{Ahmad2022Bioinspired,
   title = {{PACNav: A collective navigation approach for UAV swarms deprived of communication and external localization}},
   author = {{Ahmad}, Afzal and {Bonilla Licea}, Daniel and {Silano}, Giuseppe and {Baca}, Tomas and {Saska}, Martin},
   doi = {10.1088/1748-3190/ac98e6},
